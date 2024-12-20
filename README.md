@@ -16,6 +16,7 @@ How to Set Up:
 
 1. Clone or download this repository.
 2. Open the `index.html` file in your web browser to start playing the game.
+3. Open the URl and start the game https://capable-sable-e848bb.netlify.app
 
 Features:
 
