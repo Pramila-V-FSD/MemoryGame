@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Game</title>
+  <style>
+    /* Reset styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: Arial, sans-serif;
+   
+    background: linear-gradient(90deg, rgba(199,0,123,0.99) 0%, rgba(118,0,199,1) 100%);
+    text-align: center;
+  }
+  
+  header {
+    margin: 20px;
+    
+  }
+  
+  h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    color:orangered;
+    margin-top: 30px;
+  }
+  
+  .game-info {
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+    margin-top: 20px;
+    
+  }
+  
+  button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
+  }
+  
+  button:hover {
+    background-color: #45a098;
+  }
+  
+  .game-board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    justify-content: center;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .card {
+    width: 100px;
+    height: 100px;
+   background-color: #bbb;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    color: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .card.flipped {
+    background-color:orange;
+    color: #333;;
+  }
+  
+  .card.matched {
+    background-color: #28a745;
+    color: white;
+    cursor: default;
+  }
+  
+  @media (max-width: 600px) {
+    .game-board {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Memory Game</h1>
+    <div class="game-info">
+      <span id="moves">Moves: 0</span>
+      <span id="matched">Matched Pairs: 0</span>
+    </div>
+    <button id="restartButton">Restart Game</button>
+  </header>
+  <main>
+    <div id="gameBoard" class="game-board">
+      <!-- Cards will be dynamically generated here -->
+    </div>
+  </main>
+  <script>
+    // Constants for card symbols
+const cardSymbols = [
+    "🍎", "🍎", "🍒", "🍒", "🍓", "🍓", 
+    "🍍", "🍍", "🍑", "🍑", "🍇", "🍇"
+  ];
+  
+  // Game state variables
+  let flippedCards = [];
+  let matchedCards = [];
+  let moveCount = 0;
+  let matchedPairCount = 0;
+  let isGameOver = false;
+  
+  // DOM elements
+  const gameBoard = document.getElementById("gameBoard");
+  const restartButton = document.getElementById("restartButton");
+  const movesDisplay = document.getElementById("moves");
+  const matchedDisplay = document.getElementById("matched");
+  
+  // Shuffle the cards randomly
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+    }
+  }
+  
+  // Render the game board with shuffled cards
+  function createGameBoard() {
+    gameBoard.innerHTML = "";
+    const shuffledCards = [...cardSymbols];
+    shuffle(shuffledCards);
+  
+    shuffledCards.forEach((symbol, index) => {
+      const card = document.createElement("div");
+      card.classList.add("card");
+      card.dataset.id = index;
+      card.dataset.symbol = symbol;
+      card.addEventListener("click", flipCard);
+      gameBoard.appendChild(card);
+    });
+  }
+  
+  // Handle card flip logic
+  function flipCard(event) {
+    if (isGameOver || event.target.classList.contains("flipped") || flippedCards.length === 2) {
+      return;
+    }
+  
+    const card = event.target;
+    card.classList.add("flipped");
+    card.textContent = card.dataset.symbol;
+  
+    flippedCards.push(card);
+  
+    if (flippedCards.length === 2) {
+      checkForMatch();
+    }
+  }
+  
+  // Check if two flipped cards match
+  function checkForMatch() {
+    const [card1, card2] = flippedCards;
+    moveCount++;
+    movesDisplay.textContent = `Moves: ${moveCount}`;
+  
+    if (card1.dataset.symbol === card2.dataset.symbol) {
+      card1.classList.add("matched");
+      card2.classList.add("matched");
+      matchedCards.push(card1, card2);
+      matchedPairCount++;
+      matchedDisplay.textContent = `Matched Pairs: ${matchedPairCount}`;
+      flippedCards = [];
+      if (matchedPairCount === cardSymbols.length / 2) {
+        endGame();
+      }
+    } else {
+      setTimeout(() => {
+        card1.classList.remove("flipped");
+        card2.classList.remove("flipped");
+        flippedCards = [];
+      }, 1000);
+    }
+  }
+  
+  // End the game when all pairs are matched
+  function endGame() {
+    isGameOver = true;
+    alert("You won! 🎉");
+  }
+  
+  // Restart the game
+  function restartGame() {
+    isGameOver = false;
+    flippedCards = [];
+    matchedCards = [];
+    moveCount = 0;
+    matchedPairCount = 0;
+    movesDisplay.textContent = `Moves: 0`;
+    matchedDisplay.textContent = `Matched Pairs: 0`;
+    createGameBoard();
+  }
+  
+  // Event listener for the restart button
+  restartButton.addEventListener("click", restartGame);
+  
+  // Initialize the game board
+  createGameBoard();
+  
+  </script>
+</body>
+</html>
